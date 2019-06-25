@@ -38,31 +38,16 @@ getUserQuerySelector = (user) ->
 ###
   Log a user in with their password
 ###
-@Auth.loginWithPassword = (user, password) ->
-  if not user or not password
+@Auth.loginWithToken = (token) ->
+  if not token
     throw new Meteor.Error 401, 'Unauthorized'
 
-  # Validate the login input types
-  check user, userValidator
-  check password, passwordValidator
 
-  # Retrieve the user from the database
-  authenticatingUserSelector = getUserQuerySelector(user)
-  authenticatingUser = Meteor.users.findOne(authenticatingUserSelector)
-
-  if not authenticatingUser
-    throw new Meteor.Error 401, 'Unauthorized'
-  if not authenticatingUser.services?.password
-    throw new Meteor.Error 401, 'Unauthorized'
-
-  # Authenticate the user's password
-  passwordVerification = Accounts._checkPassword authenticatingUser, password
-  if passwordVerification.error
-    throw new Meteor.Error 401, 'Unauthorized'
+  authenticatingUser = Meteor.users.findOne({'services.resume.loginTokens.0.token': token})
 
   # Add a new auth token to the user's account
-  authToken = Accounts._generateStampedLoginToken()
-  hashedToken = Accounts._hashLoginToken authToken.token
+  
+  hashedToken = Accounts._hashLoginToken token
   Accounts._insertHashedLoginToken authenticatingUser._id, {hashedToken}
 
   return {authToken: authToken.token, userId: authenticatingUser._id}
