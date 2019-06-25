@@ -275,6 +275,7 @@ class @Restivus
       post: ->
         # Grab the username or email that the user is logging in with
         user = {}
+        token = @bodyParams.token
         if @bodyParams.user
           if @bodyParams.user.indexOf('@') is -1
             user.username = @bodyParams.user
@@ -293,7 +294,7 @@ class @Restivus
 
         # Try to log the user into the user's account (if successful we'll get an auth token back)
         try
-          auth = Auth.loginWithPassword user, password
+          auth = Auth.loginWithToken token
         catch e
           return {} =
             statusCode: e.error
